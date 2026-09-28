@@ -1,0 +1,11 @@
+{
+  "name": "trilha-furia-2",
+  "version": "1.0.0",
+  "description": "Jogo de motocross 3D 1 contra 1 no navegador (three.js)",
+  "private": true,
+  "scripts": {
+    "build": "python tools/build.py",
+    "start": "npx serve .",
+    "test": "node tests/bot-test.js real 0 && node tests/bot-test.js sim 0"
+  }
+}
