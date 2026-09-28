@@ -12,10 +12,12 @@ Visão lateral, física de moto própria em unidades reais, 5 pistas, medalhas, 
 | `A` / `↑` | Joga o corpo para trás |
 | `D` / `↓` | Joga o corpo para frente |
 | `R` | Reinicia a corrida |
+| `Enter` / `Espaço` | Depois de uma queda, volta para a pista na hora |
 | `Esc` | Volta ao menu |
 
 No celular aparecem botões na tela.
 
+- Se cair, a moto volta para a pista num trecho plano perto de onde caiu. O relógio não para, então a queda custa tempo.
 - Vença o rival para liberar a próxima pista.
 - Medalhas: bronze por terminar, prata por chegar antes do rival, ouro abaixo do tempo-alvo.
 - Moedas compram melhorias de motor, suspensão e pneus na garagem.

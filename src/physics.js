@@ -252,6 +252,18 @@ function createSim(track, upgrades, physMode){
     sim.crashed=false; sim.crashT=0; sim.riderGround=false; sim.crashCause=''; sim.finished=false; sim.time=0; sim.airTime=0; sim.flipAccum=0; sim.boost=0; sim.flipsTotal=0; sim.events=[];
     sim.grounded = 2;
   };
+  // put the bike back on its wheels at x (meters), standing still; race time, flips and events are kept
+  sim.respawnAt = function(xm){
+    var gy = surfaceInfo(track, xm).y;
+    sim.x = xm; sim.th = 0; sim.vx = sim.vy = sim.w = 0;
+    sim.y = gy + R + 0.44 - 0.04 - 0.13;
+    var rp = rot(K.RIDER_P0[0], K.RIDER_P0[1]);
+    sim.rx = sim.x + rp[0]; sim.ry = sim.y + rp[1]; sim.rvx = sim.rvy = 0;
+    sim.throttle = 0; sim.shift = 0; sim.shiftCur = 0;
+    sim.wheel.forEach(function(w){ w.om=0; w.comp=0; w.prevComp=0; w.contact=false; w.N=0; w.Jacc=0; w.prevBottom=0; });
+    sim.crashed=false; sim.crashT=0; sim.riderGround=false; sim.crashCause='';
+    sim.airTime=0; sim.flipAccum=0; sim.boost=0; sim.landImpact=0; sim.grounded=2;
+  };
 
   function applyAt(F, fx, fy, px, py){ // accumulate force on bike at world point
     F.fx += fx; F.fy += fy; F.t += (px-sim.x)*fy - (py-sim.y)*fx;
