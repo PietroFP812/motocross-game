@@ -28,11 +28,59 @@ var K = {
 };
 
 var TRACKS = [
-  { id:0, name:"Poeira Vermelha", seed:918273, meters:520, jumps:5, tables:3, rollers:0, h:[1.4,2.2], theme:0, rivalSpeed:13.4, rivalName:"Zeca", gold:40 },
-  { id:1, name:"Vale do Eco",     seed:55123,  meters:600, jumps:6, tables:3, rollers:1, h:[1.6,2.5], theme:1, rivalSpeed:15.1, rivalName:"Bia Turbo", gold:47 },
-  { id:2, name:"Serra Negra",     seed:777001, meters:680, jumps:7, tables:3, rollers:1, h:[1.8,2.8], theme:2, rivalSpeed:16.75, rivalName:"Lobo", gold:51.5 },
-  { id:3, name:"Noite de Lua",    seed:31337,  meters:760, jumps:8, tables:3, rollers:2, h:[2.0,3.0], theme:3, rivalSpeed:20.5, rivalName:"Sombra", gold:57.5 },
-  { id:4, name:"Cânion Final",    seed:240901, meters:840, jumps:9, tables:3, rollers:2, h:[2.2,3.3], theme:4, rivalSpeed:23.1, rivalName:"Rei do Barro", gold:64 }
+  // motocross: long laps with hills and big jumps
+  { id:0, mode:"mx", name:"Poeira Vermelha", seed:918273, theme:0, rivalSpeed:16.02, rivalName:"Zeca", gold:78.2, gen:{ len:1000, gap:[16,22], h:[1.8,2.6], hill:4 } },
+  { id:1, mode:"mx", name:"Vale do Eco", seed:55123, theme:1, rivalSpeed:19.5, rivalName:"Bia Turbo", gold:83.3, gen:{ len:1120, gap:[18,25], h:[2.0,2.9], hill:6 } },
+  { id:2, mode:"mx", name:"Serra Negra", seed:777001, theme:2, rivalSpeed:22.45, rivalName:"Lobo", gold:91.5, gen:{ len:1240, gap:[20,28], h:[2.2,3.2], hill:8 } },
+  { id:3, mode:"mx", name:"Noite de Lua", seed:31337, theme:3, rivalSpeed:21.86, rivalName:"Sombra", gold:96.9, gen:{ len:1360, gap:[22,31], h:[2.4,3.5], hill:10 } },
+  { id:4, mode:"mx", name:"Cânion Final", seed:240901, theme:4, rivalSpeed:32.53, rivalName:"Rei do Barro", gold:100.4, gen:{ len:1480, gap:[24,34], h:[2.6,3.8], hill:12 } },
+  // special: a hillside national track inspired by a famous Michigan circuit (profile only, no corners)
+  { id:5, mode:"mx", name:"Michigan", seed:1992, meters:1310, jumps:6, tables:3, rollers:1, h:[2,3], theme:5, rivalSpeed:30.31, rivalName:"Buck", gold:78.9, free:true, layout:[
+      // relief from the real terrain (heightmap 200–247 m): the start sits mid-slope (~231 m), the east side by
+      // the woods is the low ground (~214 m) and the west side is the high plateau (~239 m)
+      ['flat', 40],                                   // start straight
+      ['table', 1.8, 10],
+      ['flat', 10],
+      ['hill', -9, 70, 0.045],                         // first drop towards the woods, braking bumps
+      ['jump', { h:2.0, gap:14 }],
+      ['hill', -8, 60, 0.045],                         // down to the low ground (-17 m)
+      ['flat', 12],
+      ['jump', { h:1.6, gap:11 }],                    // rhythm along the woods
+      ['jump', { h:1.6, gap:11 }],
+      ['flat', 46],                                   // S-turn run-in to the big one
+      ['jump', { h:3.4, deg:27, gap:36, valley:-2.5, landTop:4.8, landDeg:16, after:2.0, big:true, name:'O Salto do Vale' }],
+      ['flat', 10],
+      ['hill', 12, 90],                               // climb up the hillside
+      ['flat', 16],
+      ['table', 2.6, 16, true],                       // huge tabletop on the way up
+      ['flat', 12],
+      ['hill', 11, 80],                               // up onto the high plateau (+8 m)
+      ['flat', 20],
+      ['jump', { h:2.2, gap:15 }],
+      ['flat', 16],
+      ['hill', -20, 150, 0.045],                       // long descent: crossing sides
+      ['flat', 16],
+      ['rollers', 10, 4.0, 0.6],                      // long set of sand rollers in the low ground
+      ['flat', 22],
+      ['hill', 12, 90],                               // climb to the ski jump
+      ['ski', { h:0.9, drop:6, len:40 }],             // launch off the crest, land down the hill
+      ['flat', 16],
+      ['hill', 6, 50],                                // back up to the start level
+      ['flat', 16],
+      ['table', 2.4, 14, true]                        // finish-line tabletop
+  ] },
+  // supercross: stadium floor, rhythm lanes, whoops, step-ups and triples
+  { id:6, mode:"sx", name:"Arena Relâmpago", seed:6101, theme:6, rivalSpeed:11.9, rivalName:"Faísca", gold:59.4, gen:{ len:540, gap:[8,16.0], h:[1.3,1.8], triple:0.25, whoops:[10,14] } },
+  { id:7, mode:"sx", name:"Estádio do Trovão", seed:6202, theme:7, rivalSpeed:12.41, rivalName:"Turbo Jr", gold:67.7, gen:{ len:590, gap:[8,17.5], h:[1.3,1.9], triple:0.33, whoops:[10,15] } },
+  { id:8, mode:"sx", name:"Arena Neon", seed:6303, theme:8, rivalSpeed:16.02, rivalName:"Neon", gold:66.5, gen:{ len:640, gap:[8,19.0], h:[1.3,2.0], triple:0.41, whoops:[10,16] } },
+  { id:9, mode:"sx", name:"Domo de Aço", seed:6404, theme:8, rivalSpeed:11.3, rivalName:"Ferro", gold:81.2, gen:{ len:690, gap:[8,20.5], h:[1.3,2.1], triple:0.49, whoops:[10,17] } },
+  { id:10, mode:"sx", name:"Grande Final", seed:6505, theme:6, rivalSpeed:30.71, rivalName:"Campeão", gold:71.7, gen:{ len:740, gap:[8,22.0], h:[1.3,2.2], triple:0.57, whoops:[10,18] } },
+  // hard enduro: steep climbs, logs, rock ledges and rock gardens
+  { id:11, mode:"he", name:"Pedreira", seed:7101, theme:9, rivalSpeed:18, rivalName:"Cabra", gold:77.8, techPace:1.08, gen:{ len:520, climb:[4,8], ang:[16,22], step:[0.30,0.55], rock:[0.18,0.30], maxLevel:12 } },
+  { id:12, mode:"he", name:"Trilha das Raízes", seed:7202, theme:1, rivalSpeed:18, rivalName:"Raiz", gold:77.4, techPace:1.089, gen:{ len:590, climb:[6,12], ang:[18,24], step:[0.38,0.65], rock:[0.21,0.34], maxLevel:18 } },
+  { id:13, mode:"he", name:"Serra dos Degraus", seed:7303, theme:2, rivalSpeed:18, rivalName:"Degrau", gold:88.5, techPace:1.235, gen:{ len:660, climb:[8,16], ang:[20,26], step:[0.46,0.75], rock:[0.24,0.38], maxLevel:24 } },
+  { id:14, mode:"he", name:"Cânion de Pedra", seed:7434, theme:4, rivalSpeed:18, rivalName:"Escorpião", gold:99.2, techPace:1.244, gen:{ len:730, climb:[10,20], ang:[22,28], step:[0.54,0.85], rock:[0.27,0.42], maxLevel:30 } },
+  { id:15, mode:"he", name:"Montanha de Ferro", seed:7505, theme:9, rivalSpeed:18, rivalName:"Titã", gold:102.3, techPace:1.329, gen:{ len:800, climb:[12,24], ang:[24,30], step:[0.62,0.95], rock:[0.30,0.46], maxLevel:36 } },
 ];
 
 var UPGRADES = {
@@ -55,6 +103,120 @@ function bikeStats(up){
 }
 
 /* ---------------- track (built in meters, exported in units) ---------------- */
+/* ---- procedural layouts: motocross (big jumps + hills), supercross (flat stadium, rhythm + whoops),
+        hard enduro (steep climbs, logs, rock steps, rock gardens) ---- */
+function genLayout(def, rand, rr){
+  var g = def.gen, L = [], dist = 0, level = 0, pick = function(){ return rand(); };
+  function add(st, len){ L.push(st); dist += len; }
+  if (def.mode === 'sx'){
+    add(['flat', 34], 34);
+    add(['table', rr(1.6, 2.0), rr(10, 14)], 30);                          // start-straight table
+    var guard = 0;
+    while (dist < g.len && guard++ < 200){
+      var r0 = pick();
+      if (r0 < 0.34){                                                     // rhythm lane: doubles and triples back to back
+        var n = 3 + Math.floor(rand()*3);
+        for (var i=0;i<n;i++){
+          var tri = rand() < g.triple, h = rr(g.h[0], g.h[1]);
+          var gap = tri ? rr(g.gap[1]*0.8, g.gap[1]) : rr(g.gap[0], g.gap[0] + 3);
+          add(['jump', { h:h, gap:gap, deg:rr(26, 30) }], gap + 16);
+          add(['flat', rr(1, 4)], 3);
+        }
+        add(['flat', rr(8, 14)], 11);                                     // (a turn in the real thing)
+      } else if (r0 < 0.52){
+        add(['flat', rr(10, 16)], 13);
+        add(['rollers', g.whoops[0] + Math.floor(rand()*(g.whoops[1] - g.whoops[0])), rr(3.0, 3.5), rr(0.5, 0.62), 12], 40);   // whoops
+        add(['flat', rr(8, 12)], 10);
+      } else if (r0 < 0.68){                                              // step-up onto a plateau and back down
+        var sh = rr(1.4, 1.9);
+        add(['flat', rr(12, 18)], 15);
+        add(['jump', { h:sh, gap:rr(6, 9), deg:28, landTop:sh + rr(1.2, 1.8), landDeg:16 }], 26);
+        add(['flat', rr(8, 12)], 10);
+      } else if (r0 < 0.82){                                              // big triple on its own
+        add(['flat', rr(18, 26)], 22);
+        var th = rr(g.h[1], g.h[1] + 0.5);
+        add(['jump', { h:th, gap:rr(g.gap[1], g.gap[1] + 4), deg:28 }], g.gap[1] + 20);
+        add(['flat', rr(8, 12)], 10);
+      } else {                                                            // on-off table
+        add(['flat', rr(8, 14)], 11);
+        add(['table', rr(1.6, 2.2), rr(6, 10)], 22);
+        add(['flat', rr(4, 8)], 6);
+      }
+    }
+    add(['flat', 20], 20);
+    add(['jump', { h:g.h[1], gap:g.gap[1] + 2, deg:28 }], g.gap[1] + 22);    // finish-line jump
+    return L;
+  }
+  if (def.mode === 'he'){
+    add(['flat', 30], 30);
+    var guard2 = 0;
+    while (dist < g.len && guard2++ < 300){
+      var r1 = pick();
+      if (r1 < 0.26){                                                     // steep climb (sometimes rocky)
+        var dy = rr(g.climb[0], g.climb[1]), ang = rr(g.ang[0], g.ang[1]), len = 1.5*dy/Math.tan(ang*Math.PI/180);
+        if (level + dy > g.maxLevel) dy = -dy;
+        len = 1.5*Math.abs(dy)/Math.tan(ang*Math.PI/180) + 4;
+        add(['flat', rr(10, 18)], 14);
+        add(['hill', dy, len, dy > 0 ? 0 : 0.06], len); level += dy;
+        add(['limit', dy > 0 ? 8 : 9, 14, 6], 0);           // over the crest / at the bottom: no flying off
+        add(['flat', rr(6, 10)], 8);
+      } else if (r1 < 0.42){
+        add(['log', rr(0.22, 0.34)], 6); add(['flat', rr(4, 9)], 6);
+        if (rand() < 0.5){ add(['log', rr(0.22, 0.34)], 6); add(['flat', rr(4, 9)], 6); }
+      } else if (r1 < 0.6){
+        var up = rand() < 0.65 || level < -g.maxLevel*0.5, sh2 = rr(g.step[0], g.step[1])*(up ? 1 : -1);
+        add(['step', sh2, rr(32, 42), 6.5], 5); level += sh2; add(['flat', rr(5, 10)], 8);
+      } else if (r1 < 0.8){
+        add(['rocks', 5 + Math.floor(rand()*7), rr(g.rock[0], g.rock[1])], 16); add(['flat', rr(6, 10)], 8);
+      } else if (r1 < 0.9){
+        add(['flat', rr(14, 22)], 18);
+        add(['jump', { h:rr(1.0, 1.5), gap:rr(5, 8), deg:24 }], 18);
+      } else {
+        add(['flat', rr(15, 25)], 20);
+      }
+    }
+    if (level !== 0){ var back = -level, blen = 1.5*Math.abs(back)/Math.tan(12*Math.PI/180) + 6; add(['flat', 12], 12); add(['hill', back, blen, 0], blen); }
+    add(['flat', 20], 20);
+    return L;
+  }
+  // motocross: long laps, big gaps, hills with braking bumps on the way down
+  add(['flat', rr(40, 55)], 48);
+  add(['table', rr(g.h[0], g.h[1]), rr(12, 16)], 40);
+  var guard3 = 0, lastHill = false;
+  while (dist < g.len && guard3++ < 200){
+    var r2 = pick();
+    if (r2 < 0.24 && !lastHill && g.hill > 0){
+      var dyh = rr(g.hill*0.5, g.hill)*(rand() < 0.5 ? 1 : -1);
+      if (Math.abs(level + dyh) > g.hill*1.2) dyh = -dyh;
+      var lenh = Math.abs(dyh)/Math.tan(rr(5, 9)*Math.PI/180)*1.3 + 10;
+      add(['flat', rr(8, 14)], 11);
+      add(['hill', dyh, lenh, dyh < 0 ? 0.045 : 0], lenh); level += dyh; lastHill = true;
+      add(['flat', rr(8, 14)], 11);
+      continue;
+    }
+    lastHill = false;
+    if (r2 < 0.62){
+      var hj = rr(g.h[0], g.h[1]), gp = rr(g.gap[0], g.gap[1]), r3 = rand();
+      add(['flat', rr(28, 44)], 36);
+      if (r3 < 0.2){ add(['jump', { h:hj, gap:gp*0.75, deg:rr(25, 28), landTop:hj + rr(1, 1.6), landDeg:13, after:rr(0.8, 1.5) }], gp + 30); }      // step-up
+      else if (r3 < 0.35){ add(['jump', { h:hj*0.9, gap:gp, deg:rr(23, 26), landTop:hj*0.5, landDeg:10, after:-rr(0.8, 1.4) }], gp + 25); }    // step-down
+      else add(['jump', { h:hj, gap:gp, deg:rr(24, 28) }], gp + 30);
+    } else if (r2 < 0.8){
+      add(['flat', rr(18, 30)], 24);
+      add(['table', rr(g.h[0], g.h[1]), rr(14, 22)], 45);
+    } else if (r2 < 0.92){
+      add(['flat', rr(14, 22)], 18);
+      add(['rollers', 6 + Math.floor(rand()*4), rr(4, 5), rr(0.5, 0.7)], 36);
+    } else {
+      add(['flat', rr(30, 50)], 40);
+    }
+  }
+  if (Math.abs(level) > 0.5){ var bl = Math.abs(level)/Math.tan(6*Math.PI/180)*1.3 + 10; add(['flat', 14], 14); add(['hill', -level, bl, level > 0 ? 0.045 : 0], bl); }
+  add(['flat', 26], 26);
+  add(['table', g.h[1], 16], 45);                                        // finish-line table
+  return L;
+}
+
 function generateTrack(def){
   var seed = def.seed;
   function rand(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return (seed % 10000) / 10000; }
@@ -67,8 +229,92 @@ function generateTrack(def){
   for (i=0;i<def.rollers;i++) kinds.push('R');
   for (i=kinds.length-1;i>1;i--){ var k=1+Math.floor(rand()*i); var t=kinds[i]; kinds[i]=kinds[k]; kinds[k]=t; }
   kinds[0] = 'T';
-  var ki = 0, features = [];
-  while (x < hardStop && ki < kinds.length){
+  var ki = 0, features = [], yb = 0, base = [{x:-60, y:0}, {x:14, y:0}];
+  function vLand(A, dx, dy){ var c = Math.cos(A), d = dx*Math.tan(A) - dy; return d > 0.05 ? Math.sqrt(G*dx*dx/(2*c*c*d)) : 99; }
+  var layout = def.layout || (def.gen ? genLayout(def, rand, rr) : null);
+  if (layout){ kinds = []; layout.forEach(function(st){
+    var k = st[0], o = st[1];
+    if (k === 'flat'){ x += o; cur.push({x:x, y:yb}); }
+    else if (k === 'hill'){
+      var dy = st[1], len = st[2], bump = st[3] || 0, y0 = yb;
+      if (!bump){ cur.push({x:x+len*0.18, y:y0+dy*0.04}); cur.push({x:x+len*0.82, y:y0+dy*0.96}); cur.push({x:x+len, y:y0+dy}); }
+      else { var n = Math.round(len/2.3); for (var q=1;q<=n;q++){ var t = q/n, e = t*t*(3-2*t); var tb = t - 0.5/n, eb = tb*tb*(3-2*tb); cur.push({x:x+len*tb, y:y0+dy*eb + (q<n && t>0.3 ? bump : 0)}); cur.push({x:x+len*t, y:y0+dy*e}); } }
+      x += len; yb = y0 + dy; base.push({x:x-len, y:y0}); base.push({x:x, y:yb});
+    }
+    else if (k === 'limit'){ features.push({ type:'tech', kind:'limit', lipX:x - st[2], end:x + st[3], vmax:st[1] }); }
+    else if (k === 'log'){
+      // a log lying across the track: round bump (kept round through the smoothing by using several points)
+      var lr = st[1]; x += 2; cur.push({x:x, y:yb});
+      for (var a2=1;a2<8;a2++){ var an = Math.PI*a2/8; cur.push({x:x + lr*(1 - Math.cos(an))*1.15, y:yb + lr*1.25*Math.sin(an)}); }
+      features.push({ type:'tech', kind:'log', lipX:x - 6, end:x + lr*2.3, vmax:st[2] || 6.5, r:lr, x0:x + lr*1.15, y0:yb });
+      x += lr*2.3; cur.push({x:x, y:yb}); x += 2; cur.push({x:x, y:yb});
+    }
+    else if (k === 'step'){
+      // rock ledge: steep face up (or down) onto a new level
+      var sh2 = st[1], face = Math.abs(sh2)/Math.tan((st[2] || 58)*Math.PI/180), y1 = yb;
+      x += 1.5; cur.push({x:x, y:yb}); cur.push({x:x + face*0.15, y:yb + sh2*0.05});
+      cur.push({x:x + face*0.85, y:yb + sh2*0.97}); x += face; cur.push({x:x, y:yb + sh2});
+      features.push({ type:'tech', kind:'step', lipX:x - face - 8, end:x + 2, vmax:st[3] || 5.5, h:sh2, x0:x - face, y0:y1 });
+      base.push({x:x - face, y:yb}); yb += sh2; base.push({x:x, y:yb});
+      x += 2.5; cur.push({x:x, y:yb});
+    }
+    else if (k === 'rocks'){
+      // rock garden: irregular boulders sticking out of the ground
+      var nr2 = st[1], rmax = st[2], bumps = [], x0r = x;
+      for (var q2=0;q2<nr2;q2++){
+        var h2 = rr(0.35, 1)*rmax, w2 = Math.max(rr(0.9, 1.8), 3*h2 + 0.3); x += rr(0.4, 1.2); cur.push({x:x, y:yb + rr(-0.03, 0.04)});
+        cur.push({x:x + w2*0.18, y:yb + h2*0.35}); cur.push({x:x + w2*0.42, y:yb + h2*0.92}); cur.push({x:x + w2*0.55, y:yb + h2}); cur.push({x:x + w2*0.8, y:yb + h2*0.6});
+        bumps.push({x:x + w2*0.5, w:w2, h:h2}); x += w2; cur.push({x:x, y:yb});
+      }
+      features.push({ type:'tech', kind:'rocks', lipX:x0r - 6, end:x, vmax:st[3] || 3.8, bumps:bumps, y0:yb });
+      x += 2; cur.push({x:x, y:yb});
+    }
+    else if (k === 'rollers'){
+      var nr = st[1], sp = st[2], bh = st[3];
+      features.push({ type:'rollers', lipX:x, vmin:0, vmax:st[4] || 9, end:x+nr*sp, whoops:!!st[4] });
+      for (var j=0;j<nr;j++){ cur.push({x:x+sp*0.5, y:yb+bh}); x += sp; cur.push({x:x, y:yb+0.02}); }
+    }
+    else if (k === 'table'){
+      var th = st[1], top = st[2], lA = 24*Math.PI/180, up = th/Math.tan(lA)*1.5;
+      x += 4; cur.push({x:x, y:yb});
+      cur.push({x:x+up*0.45, y:yb+th*0.22}); cur.push({x:x+up*0.8, y:yb+th*0.62}); x += up; cur.push({x:x, y:yb+th});
+      var tl = x; x += top; cur.push({x:x, y:yb+th});
+      var dn = th/Math.tan(10*Math.PI/180); cur.push({x:x+dn*0.5, y:yb+th*0.5}); x += dn; cur.push({x:x, y:yb});
+      var Ae = Math.atan(0.38*th/(0.2*up));
+      features.push({ type:'table', lipX:tl, vmin:4, vmax:Math.sqrt((top + dn*0.8)*G/Math.sin(2*lA)), big:!!st[3] });
+    }
+    else if (k === 'jump'){
+      var h = o.h, A = (o.deg || 24)*Math.PI/180, L = h/Math.tan(A)*1.55, gap = o.gap, valley = o.valley || 0;
+      var landTop = o.landTop != null ? o.landTop : h*0.92, after = o.after || 0, landDeg = (o.landDeg || 10)*Math.PI/180;
+      x += 4; cur.push({x:x, y:yb});
+      if (o.big){ cur.push({x:x+L*0.3, y:yb+h*0.06}); cur.push({x:x+L*0.62, y:yb+h*0.28}); }   // long straight lip: no kick
+      else { cur.push({x:x+L*0.45, y:yb+h*0.22}); cur.push({x:x+L*0.8, y:yb+h*0.62}); }
+      x += L; cur.push({x:x, y:yb+h});
+      runs.push(cur);
+      var lipX = x, Aeff = Math.atan(0.38*h/(0.2*L)), floor = yb + valley;
+      cur = [{x:x, y:yb+h}, {x:x + (h - valley)*0.62, y:floor}];
+      cur.push({x:x + gap - (landTop - valley)*0.8, y:floor});
+      x += gap; cur.push({x:x, y:yb+landTop}); cur.push({x:x+1.2, y:yb+landTop});
+      var land = (landTop - after)/Math.tan(landDeg);
+      cur.push({x:x+1.2+land*0.5, y:yb+(landTop+after)*0.5});
+      x += 1.2 + land; cur.push({x:x, y:yb+after});
+      var vmin = vLand(Aeff, gap + 0.8, landTop - h)*1.03, vmax = vLand(Aeff, gap + 1.2 + land*0.8, landTop - (landTop - after)*0.8 - h);
+      features.push({ type:'jump', lipX:lipX, vmin:vmin, vmax:Math.max(vmin + 1, vmax), gap:gap, h:h, big:!!o.big, name:o.name });
+      if (valley < 0){ base.push({x:lipX, y:yb}); base.push({x:lipX + (h - valley)*0.62 + 2, y:yb+valley}); base.push({x:lipX + gap - (landTop - valley)*0.8 - 2, y:yb+valley}); base.push({x:x, y:yb+after}); }
+      else if (after){ base.push({x:lipX, y:yb}); base.push({x:x, y:yb+after}); }
+      yb += after;
+    }
+    else if (k === 'ski'){
+      var sh = o.h, sA = 22*Math.PI/180, sL = sh/Math.tan(sA)*1.55, drop = o.drop, sl = o.len;
+      cur.push({x:x+sL*0.45, y:yb+sh*0.22}); cur.push({x:x+sL*0.8, y:yb+sh*0.62}); x += sL; cur.push({x:x, y:yb+sh});
+      runs.push(cur);
+      var slx = x, sAe = Math.atan(0.38*sh/(0.2*sL));
+      cur = [{x:x, y:yb+sh}, {x:x+2.5, y:yb+sh-0.5}, {x:x+sl*0.25, y:yb+sh-drop*0.2}, {x:x+sl*0.75, y:yb-drop*0.85}, {x:x+sl, y:yb-drop}];
+      base.push({x:x, y:yb}); x += sl; yb -= drop; base.push({x:x, y:yb});
+      features.push({ type:'jump', lipX:slx, vmin:6, vmax:Math.max(12, vLand(sAe, sl*0.8, -sh - drop*0.8)), gap:sl*0.3, h:sh, ski:true });
+    }
+  }); }
+  while (!layout && x < hardStop && ki < kinds.length){
     x += rr(24,40); cur.push({x:x,y:0});
     var h = rr(def.h[0], def.h[1]);
     var kind = kinds[ki];
@@ -114,7 +360,7 @@ function generateTrack(def){
     ki++;
   }
   var end = x + 70;
-  cur.push({x:end, y:0}); cur.push({x:end+80, y:0}); runs.push(cur);
+  cur.push({x:end, y:yb}); cur.push({x:end+80, y:yb}); runs.push(cur); base.push({x:end+80, y:yb});
   function chaikin(p, its){
     for (var it=0; it<its; it++){
       var q=[p[0]];
@@ -160,7 +406,7 @@ function generateTrack(def){
     jumpAfter.push(solid[i] && solid[i+1]===false);
   }
   return { pts:pts, solid:solid, runs:runsU, runsM:runsM, segs:segs, buckets:buckets, BK:BK,
-    jumpAfter:jumpAfter, rampUp:rampUp, features:features,
+    jumpAfter:jumpAfter, rampUp:rampUp, features:features, base:base.map(function(b){ return {x:b.x*U, y:b.y*U}; }),
     length:end*U, finishX:(end-12)*U };
 }
 
@@ -177,6 +423,12 @@ function segAt(track,x){
   if (x < p[0].x) return 0;
   while (hi-lo>1){ var m=(lo+hi)>>1; if (p[m].x<=x) lo=m; else hi=m; }
   return lo;
+}
+function baseYAt(track, x){
+  var b = track.base; if (!b || b.length < 2) return 0;
+  if (x <= b[0].x) return b[0].y; if (x >= b[b.length-1].x) return b[b.length-1].y;
+  for (var i=0;i<b.length-1;i++){ if (x <= b[i+1].x){ var t = (x - b[i].x)/((b[i+1].x - b[i].x)||1); t = t*t*(3-2*t); return b[i].y + (b[i+1].y - b[i].y)*t; } }
+  return 0;
 }
 function normA(a){ a = a % (2*Math.PI); if (a > Math.PI) a -= 2*Math.PI; if (a < -Math.PI) a += 2*Math.PI; return a; }
 
@@ -464,7 +716,7 @@ function createSim(track, upgrades, physMode){
     var lx = dx*c - dy*s, ly = dx*s + dy*c;
     sim.riderPose = Math.max(-1.3, Math.min(1.3, (lx - K.RIDER_P0[0]) / K.RIDER_SHIFT));
     sim.riderCrouch = Math.max(0, Math.min(1.5, (K.RIDER_P0[1] - ly) / 0.12));
-    if (sim.y < -15) { if (!sim.crashed){ sim.crashed = true; sim.crashCause = 'pit'; } }
+    if (sim.y < trackYAt(track, sim.x*U)/U - 15) { if (!sim.crashed){ sim.crashed = true; sim.crashCause = 'pit'; } }
     var si = surfaceInfo(track, sim.x);
     if (false){ sim.crashed = true; sim.crashCause = 'pit'; }
     if (sim.x*U > track.finishX && !sim.crashed) sim.finished = true;
@@ -494,15 +746,16 @@ function createRival(track, def){
       var target = top * (0.97 + 0.03*Math.sin(r.time*0.7));
       var xm = r.x/U;
       for (var fi=0; fi<track.features.length; fi++){
-        var fe = track.features[fi], endX = fe.type==='rollers' ? fe.end : fe.lipX;
+        var fe = track.features[fi], endX = fe.end != null ? fe.end : fe.lipX;
         if (endX < xm - 1) continue;
-        if (fe.lipX - xm < 45){
-          var ft = fe.type==='jump' ? fe.vmin*0.4 + fe.vmax*0.6 : fe.type==='table' ? fe.vmax*0.85 : 8.5;
-          target = Math.min(target, ft*U);
+        if (fe.lipX - xm < (fe.type==='jump' ? 70 : 45)){
+          var ft = fe.type==='jump' ? fe.vmin*0.4 + fe.vmax*0.6 : fe.type==='table' ? fe.vmax*0.85 : (fe.vmax || 8.5)*(def.techPace || 1);
+          // a slow rival still carries enough speed to clear the gaps; its pace only shows on the flats
+          target = fe.type==='jump' ? ft*U : Math.min(target, ft*U);
         }
         break;
       }
-      var a = (target > r.vx ? acc*(1 - r.vx/(top*1.15)) : -acc*1.5) - g*Math.sin(Math.atan(slope))*0.35;
+      var a = (target > r.vx ? acc*(1 - r.vx/(Math.max(top, target)*1.15)) : -acc*1.5) - g*Math.sin(Math.atan(slope))*0.35;
       r.vx += a*dt; if (r.vx < 0) r.vx = 0;
       var nx = r.x + r.vx*Math.cos(Math.atan(slope))*dt;
       var lip = null;
@@ -528,7 +781,7 @@ function createRival(track, def){
   return r;
 }
 
-return { K:K, U:U, TRACKS:TRACKS, UPGRADES:UPGRADES, bikeStats:bikeStats, generateTrack:generateTrack, trackYAt:trackYAt, segAt:segAt, normA:normA, createSim:createSim, createRival:createRival, contact:contact, surfaceInfo:surfaceInfo };
+return { K:K, U:U, TRACKS:TRACKS, UPGRADES:UPGRADES, bikeStats:bikeStats, generateTrack:generateTrack, trackYAt:trackYAt, baseYAt:baseYAt, segAt:segAt, normA:normA, createSim:createSim, createRival:createRival, contact:contact, surfaceInfo:surfaceInfo };
 }
 /*CORE_END*/
 if (typeof module !== 'undefined') module.exports = makeCore;

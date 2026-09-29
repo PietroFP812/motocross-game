@@ -1,7 +1,7 @@
 # Trilha Fúria 2
 
 Jogo de motocross 3D de corrida 1 contra 1, feito para rodar no navegador com [three.js](https://threejs.org/).
-Visão lateral, física de moto própria em unidades reais, 5 pistas, medalhas, garagem de melhorias e mortais.
+Visão lateral, física de moto própria em unidades reais, 3 modalidades: Motocross (5 pistas longas com morros e saltos grandes + a especial Michigan), Supercross (5 estádios com rhythm, whoops e triplos) e Hard Enduro (5 trilhas com subidas íngremes, troncos, degraus de pedra e pedreiras), medalhas, garagem de melhorias e mortais.
 
 ## Como jogar
 
@@ -55,7 +55,7 @@ src/game.html       página do jogo: cenário, moto, piloto, efeitos, menus
 src/physics.js      física da moto, geração das pistas e rival
 assets/             céus HDR em PNG (formato RGBE sem perda)
 tools/build.py      junta src/game.html + src/physics.js em index.html
-tests/bot-test.js   piloto automático que testa as 5 pistas sem navegador
+tests/bot-test.js   piloto automático que testa todas as pistas sem navegador
 ```
 
 Depois de editar algo em `src/`, gere o `index.html` de novo:

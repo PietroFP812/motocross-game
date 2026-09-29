@@ -292,7 +292,7 @@
 <div class="overlay mscreen" id="menu">
   <header class="mtop">
     <button class="backBtn" id="modesBack" aria-label="Voltar às modalidades"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-    <div class="mlogo">TRILHA <b>FÚRIA</b><sup>2</sup><small>MOTOCROSS</small></div>
+    <div class="mlogo">TRILHA <b>FÚRIA</b><sup>2</sup><small id="modeTag">MOTOCROSS</small></div>
     <nav class="tabs" role="tablist" aria-label="Menu">
       <button role="tab" id="tabRace" aria-selected="true">Corrida</button>
       <button role="tab" id="garageBtn" aria-selected="false">Garagem</button>
@@ -424,6 +424,8 @@ const SAVE_KEY = 'trilhaFuria2_save_v3';
 const COARSE = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
 let save = { coins:0, up:{engine:0,suspension:0,tires:0}, best:{}, medal:{}, unlocked:1, phys:'real', gfx: COARSE ? 'leve' : 'alto' };
 try { const raw = localStorage.getItem(SAVE_KEY); if (raw){ const d = JSON.parse(raw); save = Object.assign(save, d); save.up = Object.assign({engine:0,suspension:0,tires:0}, d.up||{}); } } catch(e){}
+// v5: the motocross tracks were rebuilt (longer laps, bigger jumps, hills): old lap records no longer apply
+if ((save.v || 0) < 5){ for (let i=0;i<5;i++) delete save.best[i]; save.unl = save.unl || {}; save.v = 5; try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e){} }
 function persist(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e){} }
 
 /* ---------------- themes ---------------- */
@@ -432,7 +434,14 @@ const THEMES = [
   { sky:['#4aa8ef','#9fd6fb','#e6f6ff'], fog:0xc6e6f5, top:0x9a6b40, side:0x5b3a22, edge:0x5e9b35, ground:0x6aa53e, hill:[0x5c9448,0x6f9f86], mtn:[0x4f7f8f,0x6f9fa8], sun:0xfff8ea, sunI:2.4, hemi:[0xffffff,0x3d5a2a,1.15], prop:'pine', dust:0xb89468, cloud:0xffffff, sunPos:[0.8,0.18], sunCol:'255,252,235' },
   { sky:['#66717e','#9aa4ae','#cfd5db'], fog:0xb7bec6, top:0x8a7862, side:0x2f2620, edge:0x77735a, ground:0x5d5a4c, hill:[0x4f5552,0x5f666a], mtn:[0x3b4048,0x555b63], sun:0xf0f0ff, sunI:1.7, hemi:[0xe8ecf0,0x2c2a28,1.1], prop:'rock', dust:0xa89a88, cloud:0xdfe3e8, sunPos:[0.7,0.2], sunCol:'235,240,250' },
   { sky:['#040918','#0c1a3c','#2a3b6e'], fog:0x1a2550, top:0x6a7390, side:0x1c2233, edge:0x39506a, ground:0x26304a, hill:[0x18223a,0x141c33], mtn:[0x10172e,0x1a2342], sun:0xa9bdff, sunI:2.1, hemi:[0x9fb0ff,0x141a30,1.3], prop:'pine', dust:0x7d86a3, stars:true, cloud:0x3a4a78, sunPos:[0.78,0.2], sunCol:'230,235,255' },
-  { sky:['#ffcf84','#ff9657','#c9482f'], fog:0xe8875a, top:0xa85a36, side:0x6e2513, edge:0xe8894a, ground:0xb8542b, hill:[0xa84423,0x9a3c24], mtn:[0x8a3219,0xa8452a], sun:0xffd9a0, sunI:2.4, hemi:[0xffe8cc,0x5a1f10,1.1], prop:'rock', dust:0xe0915e, cloud:0xffd9b0, sunPos:[0.72,0.3], sunCol:'255,230,180' }
+  { sky:['#ffcf84','#ff9657','#c9482f'], fog:0xe8875a, top:0xa85a36, side:0x6e2513, edge:0xe8894a, ground:0xb8542b, hill:[0xa84423,0x9a3c24], mtn:[0x8a3219,0xa8452a], sun:0xffd9a0, sunI:2.4, hemi:[0xffe8cc,0x5a1f10,1.1], prop:'rock', dust:0xe0915e, cloud:0xffd9b0, sunPos:[0.72,0.3], sunCol:'255,230,180' },
+  { sky:['#3f9be6','#8fcaf5','#dff1ff'], fog:0xcfe4ef, top:0x7a5a3c, side:0x3e2a1a, edge:0x5a8f33, ground:0x6fae42, hill:[0x5f9a45,0x74a468], mtn:[0x5d8a78,0x7aa39a], sun:0xfff6e0, sunI:2.5, hemi:[0xffffff,0x3f5f2a,1.15], prop:'pine', oak:true, dust:0xa8906e, cloud:0xffffff, sunPos:[0.78,0.2], sunCol:'255,250,232' },
+  // 6-8: supercross stadiums (night, dusk, dome) — flat concrete floor, stands full of people, flood lights
+  { sky:['#05070f','#0b1024','#1a2444'], fog:0x0b0f1c, top:0x6a4630, side:0x3a2416, edge:0x4a3020, ground:0x3a3a40, hill:[0x1a1e2a,0x141824], mtn:[0x10131c,0x181c28], sun:0xffffff, sunI:3.0, hemi:[0xdfe6ff,0x2a2018,1.35], prop:'none', dust:0x8a6a50, cloud:0x222633, sunPos:[0.78,0.2], sunCol:'230,235,255', stadium:true, lampCol:0xf4f7ff },
+  { sky:['#ffb070','#d8607a','#3a2a5a'], fog:0x8a5a6a, top:0x7a5034, side:0x42281a, edge:0x5a3a26, ground:0x4a4448, hill:[0x3a2a3a,0x2a2030], mtn:[0x2a2030,0x3a2a40], sun:0xffe0c0, sunI:2.6, hemi:[0xffe0d0,0x2a1a18,1.25], prop:'none', dust:0x9a7050, cloud:0xffc0a0, sunPos:[0.78,0.3], sunCol:'255,220,190', stadium:true, lampCol:0xfff1d6 },
+  { sky:['#020204','#06060c','#0c0c18'], fog:0x08080f, top:0x5e4030, side:0x32201a, edge:0x402a1e, ground:0x2c2c32, hill:[0x101018,0x0c0c14], mtn:[0x0a0a10,0x121218], sun:0xf0f0ff, sunI:3.1, hemi:[0xe0d8ff,0x201818,1.4], prop:'none', dust:0x806050, cloud:0x111118, sunPos:[0.78,0.2], sunCol:'220,220,255', stadium:true, dome:true, lampCol:0xffffff, neon:[0xff2d95,0x22d3ff] },
+  // 9: hard enduro quarry — grey terraced rock, loose stone
+  { sky:['#7faad6','#bcd2e6','#eaf0f4'], fog:0xc3ccd4, top:0x8a8074, side:0x4a443e, edge:0x7a7466, ground:0x8e887c, hill:[0x8a8580,0x9a948c], mtn:[0x6a6e74,0x8a8e94], sun:0xfff4e4, sunI:2.4, hemi:[0xf4f6ff,0x4a4640,1.1], prop:'rock', dust:0xa8a090, cloud:0xffffff, sunPos:[0.76,0.24], sunCol:'255,248,235' }
 ];
 const CSS_SWATCH = THEMES.map(t => `linear-gradient(180deg,${t.sky[0]},${t.sky[1]} 60%,${t.sky[2]})`);
 
@@ -650,7 +659,12 @@ const REAL = [
   { hdr:'assets/sky-quarry.rgbe.png',   fog:[0.46,0.55,0.62], bg:1.0,  env:0.7, sunI:2.3, sun:0xfff0dc, mtnH:900,  snow:0,   terrace:false, low:0x5f8a3a, high:0x4a7038, rock:0x707068 },
   { hdr:'assets/sky-overcast.rgbe.png', fog:[0.50,0.55,0.62], bg:0.8, env:0.9,  sunI:1.4, sun:0xeef2ff, mtnH:1150, snow:560, terrace:false, low:0x5d5a48, high:0x4e5450, rock:0x5d6064 },
   { hdr:'assets/sky-night.rgbe.png', paintedSky:true, fog:[0.022,0.03,0.055], bg:0.5, env:1.9, sunI:1.1, sun:0x9fb4ff, mtnH:820, snow:0, terrace:false, low:0x2c3648, high:0x222a3a, rock:0x2c3242 },
-  { hdr:'assets/sky-sunrise.rgbe.png',  fog:[0.42,0.30,0.22], bg:1.0,  env:0.7, sunI:2.4, sun:0xffc890, mtnH:560,  snow:0,   terrace:true,  low:0xc0643a, high:0xa24c2c, rock:0x8e4023 }
+  { hdr:'assets/sky-sunrise.rgbe.png',  fog:[0.42,0.30,0.22], bg:1.0,  env:0.7, sunI:2.4, sun:0xffc890, mtnH:560,  snow:0,   terrace:true,  low:0xc0643a, high:0xa24c2c, rock:0x8e4023 },
+  { hdr:'assets/sky-quarry.rgbe.png',   fog:[0.46,0.55,0.60], bg:1.0,  env:0.75, sunI:2.4, sun:0xfff2dc, mtnH:180, snow:0,   terrace:false, low:0x6a9c40, high:0x557f38, rock:0x7a746a, farm:true },
+  { hdr:'assets/sky-night.rgbe.png', paintedSky:true, fog:[0.03,0.035,0.06], bg:0.5, env:1.4, sunI:3.0, sun:0xffffff, mtnH:0, snow:0, terrace:false, low:0x3a3a40, high:0x3a3a40, rock:0x4a4a50 },
+  { hdr:'assets/sky-sunrise.rgbe.png', paintedSky:true, fog:[0.25,0.16,0.2], bg:0.8, env:1.0, sunI:2.6, sun:0xffe0c0, mtnH:0, snow:0, terrace:false, low:0x4a4448, high:0x4a4448, rock:0x55505a },
+  { hdr:'assets/sky-night.rgbe.png', paintedSky:true, fog:[0.02,0.02,0.03], bg:0.4, env:1.5, sunI:3.1, sun:0xf0f0ff, mtnH:0, snow:0, terrace:false, low:0x2c2c32, high:0x2c2c32, rock:0x3a3a40 },
+  { hdr:'assets/sky-overcast.rgbe.png', fog:[0.52,0.56,0.6], bg:0.9, env:0.9, sunI:2.2, sun:0xfff4e4, mtnH:900, snow:0, terrace:true, low:0x8a8278, high:0x77716a, rock:0x6e6a66 }
 ];
 const SUN_DIR = new THREE.Vector3(0.58, 0.62, 0.80).normalize();   // light from behind-right of the camera
 
@@ -752,10 +766,11 @@ function realDirtSide(th){
 }
 
 /* ---------------- landscape: one lit heightfield from the track to the mountains ---------------- */
+const baseY = x => track && track.base ? CORE.baseYAt(track, x) : 0;
 function landHeight(x, z){
-  const rt = REAL[def.theme], d = -z - (K.TRACK_DEPTH/2 + 10);
-  if (d < 0) return -2;
-  let h = -5 + 8*fbm(x*0.01, z*0.01, 2)*smooth(bedApron - 40, bedApron + 80, d);
+  const rt = REAL[def.theme], d = -z - (K.TRACK_DEPTH/2 + 10), B = baseY(x);
+  if (d < 0) return -2 + B;
+  let h = -5 + 8*fbm(x*0.01, z*0.01, 2)*smooth(bedApron - 40, bedApron + 80, d) + B*(1 - smooth(700, 2200, d));
   h += smooth(bedApron, 1300, d) * (30 + 190*fbm(x*0.0011 + 3.1, z*0.0016 + 7.7, 4));
   h += smooth(1400, 2800, d) * rt.mtnH * Math.pow(ridged(x*0.00042 + 11.3, z*0.0007 + 5.1, 5), 1.25);
   if (rt.terrace && h > 40){ const st = 75, f = h/st, fl = Math.floor(f), fr = f - fl; h = (fl + smooth(0.78, 1, fr))*st*0.85 + h*0.15; }
@@ -779,7 +794,7 @@ function bedHeight(x, z){
   const b = bedSlope(x, z);
   if (b.s <= 0) return b.h;
   const lumps = (vnoise(x*0.03, z*0.03) - 0.5)*3*smooth(0, 40, b.s);
-  return smax(BED_GROUND + lumps, b.h, 22) - smooth(bedApron - 90, bedApron, b.s)*4.8;   // tuck the outer rim under the ground plane
+  return smax(BED_GROUND + lumps + baseY(x), b.h, 22) - smooth(bedApron - 90, bedApron, b.s)*4.8;   // tuck the outer rim under the ground plane
 }
 function groundY(x, z){ return Math.max(landHeight(x, z), bedHeight(x, z)); }
 function buildLandscape(){
@@ -927,6 +942,18 @@ function vegGeometries(){
       const b = lumpy(new THREE.IcosahedronGeometry(R, 2), 0.14, 0.08, i*5.3);
       parts.push(paint(T(b, Math.cos(a)*rr, 78 + (i ? (Math.random()-0.3)*16 : 14), Math.sin(a)*rr), new THREE.Color(0x3f6e2c).offsetHSL((Math.random()-0.5)*0.03, 0, (Math.random()-0.5)*0.08), 0.16)); }
     VEG.tree = mergeGeometries(parts); }
+  // lighter broadleaf for dense woods
+  { const parts = [paint(T(new THREE.CylinderGeometry(3, 5, 62, 6), 0, 31, 0), 0x5a4330, 0.2)];
+    for (let i=0;i<6;i++){ const a = i/6*Math.PI*2, rr = i ? 17 : 0, R = 23 + Math.random()*12;
+      const b = lumpy(new THREE.IcosahedronGeometry(R, 1), 0.16, 0.08, i*6.1);
+      parts.push(paint(T(b, Math.cos(a)*rr, 80 + (i ? (Math.random()-0.3)*16 : 14), Math.sin(a)*rr), new THREE.Color(0x3a6a28).offsetHSL((Math.random()-0.5)*0.04, 0, (Math.random()-0.5)*0.1), 0.16)); }
+    VEG.oak = mergeGeometries(parts); }
+  // redbud: low, wide, many-trunked tree covered in pink-magenta blossom
+  { const parts = [paint(T(new THREE.CylinderGeometry(2.2, 3.6, 40, 7), 0, 20, 0), 0x3f2f26, 0.2)];
+    for (let i=0;i<9;i++){ const a = i/9*Math.PI*2, rr = i ? 22 : 0, R = 16 + Math.random()*9;
+      const b = lumpy(new THREE.IcosahedronGeometry(R, 1), 0.18, 0.1, i*4.1); b.scale(1, 0.72, 1);
+      parts.push(paint(T(b, Math.cos(a)*rr, 50 + (i ? (Math.random()-0.4)*10 : 10), Math.sin(a)*rr), new THREE.Color(0xc2508f).offsetHSL((Math.random()-0.5)*0.03, 0, (Math.random()-0.5)*0.1), 0.14)); }
+    VEG.redbud = mergeGeometries(parts); }
   // bush
   { const parts = [];
     for (let i=0;i<4;i++){ const R = 9 + Math.random()*7; const b = lumpy(new THREE.IcosahedronGeometry(R, 1), 0.18, 0.12, i*7.7);
@@ -938,7 +965,7 @@ function vegGeometries(){
       parts.push(paint(T(b, (Math.random()-0.5)*14, R*0.8, (Math.random()-0.5)*10), 0x8a7f52, 0.25)); }
     VEG.shrub = mergeGeometries(parts); }
   // boulder
-  VEG.rock = paint(lumpy(new THREE.IcosahedronGeometry(1, 3), 0.28, 1.6, 4.2), 0xffffff, 0.12);
+  VEG.rock = paint(lumpy(new THREE.IcosahedronGeometry(1, 2), 0.28, 1.6, 4.2), 0xffffff, 0.12);
   VEG.ready = true;
   return VEG;
 }
@@ -962,7 +989,20 @@ function buildVegetation(r){
   const tint = (base, v) => new THREE.Color(base).offsetHSL((r()-0.5)*0.02, (r()-0.5)*0.1, (r()-0.5)*v);
   const group = new THREE.Group();
   const green = theme.prop === 'pine', night = !!theme.stars, sandy = !!rt.sandy, canyon = def.theme === 4, serra = def.theme === 2;
-  if (green){
+  const oak = !!theme.oak;
+  if (oak){
+    group.add(scatter(V.oak, vmat, Math.round(Math.min(len, 46000)/60), () => {
+      const x = -2500 + r()*(len + 5000), z = backZ(140, 2400, 1.2); if (fenceBand(z)) return null;
+      const s = (1.3 + r()*1.4)*(1 + Math.max(0, -z - 700)/1600);
+      return { x, y:groundY(x, z) - 3, z, s, ry:r()*6, c:tint(0xffffff, 0.16) };
+    }, true));
+    group.add(scatter(V.redbud, vmat, Math.round(Math.min(len, 46000)/130), () => {
+      const front = r() < 0.15, x = -1500 + r()*(len + 3000), z = front ? D/2 + 330 + r()*450 : backZ(130, 1300, 1.3); if (fenceBand(z)) return null;
+      const s = 1.1 + r()*0.9;
+      return { x, y:groundY(x, z) - 2, z, s, ry:r()*6, c:tint(0xffffff, 0.12) };
+    }, true));
+  }
+  if (green && !oak){
     const pineCol = night ? 0x7f8fa0 : 0xffffff;
     group.add(scatter(V.pine, vmat, Math.round(len/45), () => {
       const x = -2500 + r()*(len + 5000), z = backZ(120, 2200, 1.3); if (fenceBand(z)) return null;
@@ -1038,7 +1078,7 @@ function buildTrackDressing(r){
   const D = K.TRACK_DEPTH, g = new THREE.Group(), len = track.length, rt = REAL[def.theme];
   // windrows: loose dirt pushed to the sides by the grader
   { const n = Math.round(len/12), wm = std(new THREE.Color(theme.top).lerp(new THREE.Color(theme.side), 0.45).multiplyScalar(0.72), { roughness:1, metalness:0 });
-    g.add(scatter(lumpy(new THREE.IcosahedronGeometry(1, 2), 0.25, 2.1, 1.1), wm, n, () => {
+    g.add(scatter(lumpy(new THREE.IcosahedronGeometry(1, 1), 0.25, 2.1, 1.1), wm, n, () => {
       const sd = r() < 0.5 ? 1 : -1, x = -300 + r()*(len + 600), z = sd*(D/2 - 4 + r()*16), s = 4 + r()*5;
       return { x, y:bedHeight(x, z) - s*0.3, z, s, sx:s*(1.5 + r()*1.3), sy:s*(0.6 + r()*0.25), sz:s*(0.9 + r()*0.4), ry:r()*6 };
     }, false)); }
@@ -1054,7 +1094,7 @@ function buildTrackDressing(r){
     });
     bl.count = n; bl.castShadow = true; g.add(bl); }
   // puddles on flat stretches (not on sand)
-  if (!rt.sandy && def.theme !== 4 && def.theme !== 3){
+  if (!rt.sandy && def.theme !== 4 && def.theme !== 3 && !theme.stadium && def.mode !== 'he'){
     const pm = new THREE.MeshStandardMaterial({ color:new THREE.Color(theme.side).multiplyScalar(0.35), roughness:0.06, metalness:0.1, transparent:true, opacity:0.88, polygonOffset:true, polygonOffsetFactor:-2, polygonOffsetUnits:-2 });
     for (let x=900; x<len - 600; x += 1400 + r()*1600){
       if (Math.abs(CORE.trackYAt(track, x - 120)) > 2 || Math.abs(CORE.trackYAt(track, x + 120)) > 2) continue;
@@ -1090,6 +1130,93 @@ function updateCrowd(dt, playerX){
   });
   [C.bodies, C.heads, C.legs, C.arms, C.caps].forEach(o => { o.instanceMatrix.needsUpdate = true; if (o.instanceColor) o.instanceColor.needsUpdate = true; });
 }
+// ---- supercross stadium: concrete floor, a long grandstand packed with people, flood-light rigs, optional roof
+function crowdTexture(seed){
+  let sd = seed; const rnd = () => { sd = (sd*1103515245 + 12345) & 0x7fffffff; return (sd % 10000)/10000; };
+  const c = document.createElement('canvas'); c.width = 512; c.height = 512; const x = c.getContext('2d');
+  const shirts = ['#d92e3f','#2f7bff','#ffc83d','#f2f2f2','#1b1b1b','#2f9e57','#ff6a13','#7b4bd6','#8a8f96','#e84fa0','#20c4c4'];
+  const skins = ['#e8c1a0','#c68e62','#8d5a3b','#f1d2b6','#6b4430'];
+  for (let row=0; row<32; row++){
+    const y0 = row*16;
+    x.fillStyle = row % 2 ? '#23252e' : '#1c1e26'; x.fillRect(0, y0, 512, 16);        // concrete step
+    x.fillStyle = '#3a3d4a'; x.fillRect(0, y0 + 13, 512, 3);                            // seat edge
+    for (let px=2; px<512; px += 11 + rnd()*3){
+      if (rnd() < 0.12) continue;                                                       // empty seat
+      const up = rnd() < 0.25 ? 3 : 0;
+      x.fillStyle = shirts[Math.floor(rnd()*shirts.length)]; x.fillRect(px, y0 + 6 - up, 8, 8 + up);
+      x.fillStyle = skins[Math.floor(rnd()*skins.length)]; x.beginPath(); x.arc(px + 4, y0 + 4 - up, 3, 0, 7); x.fill();
+      if (up && rnd() < 0.5){ x.fillRect(px - 1, y0 - 2, 2, 6); }                        // a raised arm
+    }
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t;
+}
+function buildStadium(r){
+  const D = K.TRACK_DEPTH, g = new THREE.Group(), len = track.length, x0 = -3000, x1 = len + 3000, W = x1 - x0, cx = (x0 + x1)/2;
+  // floor (concrete, a bit of dirt tracked everywhere)
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, 5200), std(theme.ground, { roughness:0.92, metalness:0 }));
+  floor.rotation.x = -Math.PI/2; floor.position.set(cx, -4, 400); floor.receiveShadow = true; g.add(floor);
+  // grandstand: a sloped seating bowl behind the track, printed with a crowd
+  const zA = -D/2 - 620, zB = -D/2 - 2050, hB = 1150, slope = Math.hypot(zA - zB, hB);
+  const ct = crowdTexture(def.seed); ct.repeat.set(W/400, slope/(512*1.0));
+  const stand = new THREE.Mesh(new THREE.PlaneGeometry(W, slope), new THREE.MeshLambertMaterial({ map:ct, color:0x80859a }));
+  stand.position.set(cx, hB/2 + 40, (zA + zB)/2); stand.rotation.x = Math.atan2(zB - zA, hB); g.add(stand);
+  // front wall of the stands with invented sponsors
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(W, 60, 16), lam(0x15161c)); wall.position.set(cx, 26, zA + 8); g.add(wall);
+  const BR = [['TRILHA FÚRIA','#1a0f0a','#ff5a1f'],['BARRO & GÁS','#ffc83d','#1a0f0a'],['MX RACING','#ffffff','#2f7bff'],['PNEU BRAVO','#d92e3f','#ffffff'],['ARENA SX','#101014','#22d3ff']];
+  const bm = BR.map(([t,b,f]) => new THREE.MeshBasicMaterial({ map:bannerTexture(t,b,f), color:new THREE.Color(1.6,1.6,1.6) }));
+  for (let x = x0 + 200, i = 0; x < x1; x += 260, i++){ const b = new THREE.Mesh(new THREE.PlaneGeometry(240, 44), bm[i % bm.length]); b.position.set(x, 28, zA + 17); g.add(b); }
+  // tuff-block border between floor and the riding area (front, towards the camera)
+  { const n = Math.ceil((len + 1200)/60), tb = new THREE.InstancedMesh(new THREE.BoxGeometry(56, 18, 20), std(0xffffff, { roughness:.5 }), n), m4 = new THREE.Matrix4(), c = new THREE.Color();
+    for (let i=0;i<n;i++){ const x = -600 + i*60; m4.makeTranslation(x, 5, D/2 + bedApron - 20); tb.setMatrixAt(i, m4); tb.setColorAt(i, c.set(i % 2 ? 0x2f7bff : 0xf2f2f2)); }
+    tb.receiveShadow = true; g.add(tb); }
+  // flood-light rigs along the rim, plus a few big towers
+  const lampMat = new THREE.MeshBasicMaterial({ color:new THREE.Color(theme.lampCol || 0xffffff).multiplyScalar(16) });
+  for (let x = x0 + 400; x < x1; x += 700){
+    const y = hB + 120, z = zB + 60;
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(160, 60, 10), lam(0x222228)); bar.position.set(x, y, z); g.add(bar);
+    for (let k=0;k<6;k++){ const l = new THREE.Mesh(new THREE.BoxGeometry(20, 16, 4), lampMat); l.position.set(x - 60 + (k%3)*60, y + (k<3 ? 14 : -14), z + 7); g.add(l); }
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map:DUST_TEX, color:theme.lampCol || 0xffffff, transparent:true, opacity:.5, depthWrite:false, fog:false })); glow.scale.set(420, 260, 1); glow.position.set(x, y, z + 20); g.add(glow);
+  }
+  // roof (dome) with trusses and neon strips, or an open night sky
+  if (theme.dome){
+    const roof = new THREE.Mesh(new THREE.PlaneGeometry(W, 4200), lam(0x0d0d12, { side:THREE.DoubleSide })); roof.rotation.x = Math.PI/2; roof.position.set(cx, hB + 520, -600); g.add(roof);
+    for (let x = x0; x < x1; x += 500){ const t = new THREE.Mesh(new THREE.BoxGeometry(14, 40, 4200), lam(0x2a2a33)); t.position.set(x, hB + 500, -600); g.add(t); }
+    (theme.neon || []).forEach((nc, k) => { const strip = new THREE.Mesh(new THREE.BoxGeometry(W, 6, 6), new THREE.MeshBasicMaterial({ color:new THREE.Color(nc).multiplyScalar(6) })); strip.position.set(cx, 70 + k*14, zA + 9); g.add(strip); });
+  }
+  // jumbotron over the stands
+  { const scr = new THREE.Mesh(new THREE.PlaneGeometry(520, 290), new THREE.MeshBasicMaterial({ map:bannerTexture('TRILHA FÚRIA SX', '#0b1024', '#ffc83d'), color:new THREE.Color(2,2,2) }));
+    for (let x = 600; x < len; x += 5200){ const s2 = scr.clone(); s2.position.set(x, hB + 330, zB + 120); g.add(s2); const fr = new THREE.Mesh(new THREE.BoxGeometry(540, 310, 10), lam(0x111114)); fr.position.set(x, hB + 330, zB + 112); g.add(fr); } }
+  return g;
+}
+// ---- hard enduro obstacles drawn where the physics profile has them: logs, rock ledges, rock gardens
+function buildEnduroProps(r){
+  const D = K.TRACK_DEPTH, g = new THREE.Group(), tech = track.features.filter(f => f.type === 'tech' && f.kind !== 'limit');
+  if (!tech.length) return g;
+  const V = vegGeometries();
+  const bark = new THREE.MeshStandardMaterial({ color:0x5a3e28, roughness:0.95, metalness:0 }), cut = std(0xc9a57a, { roughness:0.9 });
+  const rockMat = new THREE.MeshStandardMaterial({ vertexColors:true, roughness:0.95, metalness:0 });
+  const rockCol = new THREE.Color(REAL[def.theme].rock || 0x7a746a);
+  const rocks = [];
+  tech.forEach(f => {
+    if (f.kind === 'log'){
+      const R = f.r*1.25*0.5*U, x = f.x0*U, y = f.y0*U + R;
+      const log = new THREE.Mesh(new THREE.CylinderGeometry(R, R*1.05, D + 90, 12), bark); log.rotation.x = Math.PI/2; log.position.set(x, y, 0); log.rotation.y = (r()-0.5)*0.05; log.castShadow = true; log.receiveShadow = true; g.add(log);
+      [-1,1].forEach(sd => { const e = new THREE.Mesh(new THREE.CircleGeometry(R*0.95, 12), cut); e.position.set(x, y, sd*(D/2 + 45.5)); if (sd < 0) e.rotation.y = Math.PI; g.add(e); });
+    } else if (f.kind === 'rocks'){
+      f.bumps.forEach(b => { for (let k=0;k<5;k++){ const z = -D/2 + (k + 0.2 + r()*0.6)*D/5, main = Math.abs(z - LANE_ME) < 50 || Math.abs(z - LANE_RIVAL) < 50;
+        const s = main ? 1 : 0.6 + r()*0.8; rocks.push({ x:b.x*U + (r()-0.5)*20, y:f.y0*U + b.h*U*0.35*s, z, sx:b.w*U*0.55*s, sy:b.h*U*0.75*s, sz:(40 + r()*40)*s }); } });
+    } else if (f.kind === 'step'){
+      const up = f.h > 0, top = f.y0 + Math.max(0, f.h), hh = Math.abs(f.h)*U;
+      for (let k=0;k<7;k++){ const z = -D/2 - 20 + k*(D + 40)/6 + (r()-0.5)*20; rocks.push({ x:f.x0*U + (up ? 20 : 30) + (r()-0.5)*16, y:top*U - hh*0.55, z, sx:40 + r()*20, sy:hh*0.62 + 6, sz:34 + r()*20 }); }
+    }
+  });
+  if (rocks.length){
+    const im = new THREE.InstancedMesh(V.rock, rockMat, rocks.length), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), p = new THREE.Vector3(), sc = new THREE.Vector3(), c = new THREE.Color();
+    rocks.forEach((k, i) => { e.set(r()*0.4, r()*6, r()*0.4); q.setFromEuler(e); p.set(k.x, k.y, k.z); sc.set(k.sx, k.sy, k.sz); m4.compose(p, q, sc); im.setMatrixAt(i, m4); im.setColorAt(i, c.copy(rockCol).multiplyScalar(0.8 + r()*0.4)); });
+    im.castShadow = true; im.receiveShadow = true; g.add(im);
+  }
+  return g;
+}
 function buildWorld(){
   if (worldGroup){ scene.remove(worldGroup); disposeGroup(worldGroup); }
   worldGroup = new THREE.Group(); scene.add(worldGroup);
@@ -1097,7 +1224,7 @@ function buildWorld(){
   scene.background = skyTexture(theme); scene.background.userData.painted = true; scene.backgroundIntensity = 1;
   hemi.color.set(theme.hemi[0]); hemi.groundColor.set(theme.hemi[1]); hemi.intensity = theme.hemi[2];
   const RT = REAL[def.theme];
-  bedApron = RT.sandy ? 150 : 520;
+  bedApron = theme.stadium ? 200 : RT.sandy ? 150 : 520;
   sun.color.set(RT.sun); sun.intensity = RT.sunI;
   applySky();
   headlight.visible = !!theme.stars; headlight.intensity = theme.stars ? 9 : 0;
@@ -1165,32 +1292,40 @@ function buildWorld(){
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,70,6), lam(0xeeeeee)); pole.position.set(x, y+35, -D/2+6); worldGroup.add(pole);
     const flag = new THREE.Mesh(new THREE.PlaneGeometry(22,14), lam(0xff5a1f, { side:THREE.DoubleSide })); flag.position.set(x+11, y+62, -D/2+6); worldGroup.add(flag);
   });
-  // landscape: ground, hills and mountains as one lit heightfield
-  worldGroup.add(buildLandscape());
+  // landscape: ground, hills and mountains as one lit heightfield (a stadium has its own floor and stands)
+  if (theme.stadium) worldGroup.add(buildStadium(r)); else worldGroup.add(buildLandscape());
+  worldGroup.add(buildEnduroProps(r));
   // foreground: the track sits on a raised dirt bed; ground in front of it with grass, rocks and tyres
-  { const FG_Y = -5, len = track.length + 9000;
+  if (!theme.stadium) { const FG_Y = -5, len = track.length + 9000;
     const ft = groundTexture(theme); ft.repeat.set(len/300, 1600/300);
-    const fg = new THREE.Mesh(new THREE.PlaneGeometry(len, 1600), std(0xffffff, { map:ft, roughness:0.95, metalness:0 }));
-    fg.rotation.x = -Math.PI/2; fg.position.set(track.length/2, FG_Y, D/2 + bedApron - 30 + 800); fg.receiveShadow = true; worldGroup.add(fg);
+    const frontY = (x, z) => FG_Y + baseY(x)*(1 - smooth(0, 1500, z - D/2 - bedApron));
+    { const x0 = track.length/2 - len/2, z0 = D/2 + bedApron - 30, nxF = Math.min(900, Math.round(len/90)), zsF = [0, 40, 100, 180, 300, 450, 650, 900, 1200, 1600];
+      const posF = new Float32Array((nxF+1)*zsF.length*3), uvF = new Float32Array((nxF+1)*zsF.length*2), idxF = [];
+      zsF.forEach((dz, jz) => { for (let ix=0; ix<=nxF; ix++){ const x = x0 + len*ix/nxF, z = z0 + dz, k = jz*(nxF+1) + ix;
+        posF[k*3] = x; posF[k*3+1] = frontY(x, z); posF[k*3+2] = z; uvF[k*2] = (x - x0)/300; uvF[k*2+1] = dz/300; } });
+      for (let jz=0; jz<zsF.length-1; jz++) for (let ix=0; ix<nxF; ix++){ const a = jz*(nxF+1)+ix, b = a+1, c = a+nxF+1, d2 = c+1; idxF.push(a, c, b, b, c, d2); }
+      const gF = new THREE.BufferGeometry(); gF.setAttribute('position', new THREE.BufferAttribute(posF, 3)); gF.setAttribute('uv', new THREE.BufferAttribute(uvF, 2)); gF.setIndex(idxF); gF.computeVertexNormals();
+      ft.repeat.set(1, 1);
+      const fg = new THREE.Mesh(gF, std(0xffffff, { map:ft, roughness:0.95, metalness:0 })); fg.receiveShadow = true; worldGroup.add(fg); }
     const n = Math.min(3000, Math.round(track.length/12));
     const gm = new THREE.MeshStandardMaterial({ roughness:0.9, metalness:0, map:GRASS_TEX, alphaTest:0.5, side:THREE.DoubleSide, color:theme.stars ? 0x3c5a5a : theme.prop==='pine' ? 0x7fbf4a : theme.prop==='rock' && def.theme===2 ? 0x8c8a66 : 0xd8b070 });
     const gi = new THREE.InstancedMesh(new THREE.PlaneGeometry(40, 20).translate(0, 10, 0), gm, n);
     const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), p4 = new THREE.Vector3(), s4 = new THREE.Vector3(), yAx = new THREE.Vector3(0,1,0);
     for (let i=0;i<n;i++){
       const x = -800 + r()*(track.length + 1800), z = D/2 + 12 + Math.pow(r(), 1.4)*560;
-      q4.setFromAxisAngle(yAx, (r()-0.5)*1.2); const sc = 0.7 + r()*1.0; s4.set(sc, sc*(0.7 + r()*0.7), sc); p4.set(x, Math.max(FG_Y, bedHeight(x, z)) - 1, z);
+      q4.setFromAxisAngle(yAx, (r()-0.5)*1.2); const sc = 0.7 + r()*1.0; s4.set(sc, sc*(0.7 + r()*0.7), sc); p4.set(x, Math.max(frontY(x, z), bedHeight(x, z)) - 1, z);
       m4.compose(p4, q4, s4); gi.setMatrixAt(i, m4);
     }
     worldGroup.add(gi);
     const rockM = lam(theme.stars ? 0x3a4052 : 0x77706a, { roughness:0.95 });
     for (let x=-500; x<track.length+800; x += 160 + r()*420){
       const rk = new THREE.Mesh(new THREE.DodecahedronGeometry(8 + r()*22, 1), rockM);
-      const rz = D/2 + 40 + r()*380; rk.position.set(x, Math.max(FG_Y, bedHeight(x, rz)) + 3, rz); rk.scale.y = 0.55 + r()*0.3; rk.rotation.set(r()*3, r()*3, r()*3); rk.castShadow = true; rk.receiveShadow = true; worldGroup.add(rk);
+      const rz = D/2 + 40 + r()*380; rk.position.set(x, Math.max(frontY(x, rz), bedHeight(x, rz)) + 3, rz); rk.scale.y = 0.55 + r()*0.3; rk.rotation.set(r()*3, r()*3, r()*3); rk.castShadow = true; rk.receiveShadow = true; worldGroup.add(rk);
     }
   }
   // spectators behind the fence, gathered around the jumps; they cheer and wave when you ride past
-  { const spots = [];
-    track.features.forEach(f => { if (f.lipX == null) return; const cx = f.lipX*U; const k = 6 + Math.floor(r()*10); for (let i=0;i<k;i++) spots.push(cx - 170 + r()*460); });
+  if (!theme.stadium) { const spots = [];
+    track.features.forEach(f => { if (f.lipX == null) return; const cx = f.lipX*U, big = f.big ? 1 : 0; const k = (6 + Math.floor(r()*10))*(big ? 5 : 1); for (let i=0;i<k;i++) spots.push(cx - 170 - big*300 + r()*(460 + big*(f.gap||10)*U*0.8)); });
     const nS = spots.length;
     if (nS){
       const mk = (geo, mat, n) => { const o = new THREE.InstancedMesh(geo, mat, n); o.castShadow = true; o.instanceMatrix.setUsage(THREE.DynamicDrawUsage); worldGroup.add(o); return o; };
@@ -1216,7 +1351,7 @@ function buildWorld(){
     }
   }
   // grass tufts behind the track and along the fence (instanced)
-  { const n = Math.min(2600, Math.round(track.length/16));
+  if (!theme.stadium) { const n = Math.min(2600, Math.round(track.length/16));
     const gm = new THREE.MeshStandardMaterial({ roughness:0.9, metalness:0, map:GRASS_TEX, alphaTest:0.5, side:THREE.DoubleSide, color:theme.stars ? 0x3c5a5a : theme.prop==='pine' ? 0x7fbf4a : theme.prop==='rock' ? 0x8c8a66 : 0xd8b070 });
     const gi = new THREE.InstancedMesh(new THREE.PlaneGeometry(34, 17).translate(0, 8.5, 0), gm, n);
     const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), p4 = new THREE.Vector3(), s4 = new THREE.Vector3(), yAx = new THREE.Vector3(0,1,0);
@@ -1228,7 +1363,7 @@ function buildWorld(){
     }
     worldGroup.add(gi); }
   // low dust haze drifting over the far ground
-  for (let x=-1000; x<track.length+1500; x += 600 + r()*700){
+  if (!theme.stadium) for (let x=-1000; x<track.length+1500; x += 600 + r()*700){
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map:DUST_TEX, color:scene.fog.color, transparent:true, opacity:0.12 + r()*0.1, depthWrite:false }));
     const w = 900 + r()*900, zz0 = -500 - r()*700; s.scale.set(w, w*0.22, 1); s.position.set(x, groundY(x, zz0) + 40 + r()*60, zz0); worldGroup.add(s);
   }
@@ -1238,17 +1373,18 @@ function buildWorld(){
     const pz = -D/2 - (RT.sandy ? 120 : 280) - r()*700; if (pz < -D/2 - 225 && pz > -D/2 - 380) continue;
     const p = makeProp('cactus', r); p.position.set(x, groundY(x, pz) - 2, pz); p.rotation.y = r()*6; p.scale.setScalar(1 + r()*0.8); worldGroup.add(p);
   }
-  worldGroup.add(buildVegetation(r), buildPaddock(r), buildTrackDressing(r));
+  if (!theme.stadium) worldGroup.add(buildVegetation(r), buildPaddock(r));
+  worldGroup.add(buildTrackDressing(r));
   // hay bales along the back edge
-  for (let x=300; x<track.length; x += 260 + r()*300){
-    const y = CORE.trackYAt(track, x);
-    if (Math.abs(y) > 1 || Math.abs(CORE.trackYAt(track, x+80)) > 1 || Math.abs(CORE.trackYAt(track, x-80)) > 1) continue;
-    const bale = new THREE.Mesh(new THREE.BoxGeometry(38,18,18), lam(0xe0b85a)); bale.position.set(x, 8, D/2+34); bale.rotation.y = (r()-0.5)*0.3; bale.castShadow = true; worldGroup.add(bale);
+  if (!theme.stadium) for (let x=300; x<track.length; x += 260 + r()*300){
+    const flat = xx => Math.abs(CORE.trackYAt(track, xx) - baseY(xx)) < 1;
+    if (!flat(x) || !flat(x+80) || !flat(x-80)) continue;
+    const bale = new THREE.Mesh(new THREE.BoxGeometry(38,18,18), lam(0xe0b85a)); bale.position.set(x, bedHeight(x, D/2+34) + 8, D/2+34); bale.rotation.y = (r()-0.5)*0.3; bale.castShadow = true; worldGroup.add(bale);
   }
   // fence: posts + two tape lines following the ground behind the track (instanced)
   const postXs = [];
   const FZ = -D/2 - 250;
-  for (let x=-200; x<track.length+600; x += 140) postXs.push(x);
+  if (!theme.stadium) for (let x=-200; x<track.length+600; x += 140) postXs.push(x);
   const postGeo = new THREE.BoxGeometry(3, 34, 3), tapeGeo = new THREE.BoxGeometry(1, 2.2, 0.6);
   const posts = new THREE.InstancedMesh(postGeo, lam(0xd9d4c7), postXs.length);
   const tapes = new THREE.InstancedMesh(tapeGeo, lam(0xe8412c), postXs.length*2);
@@ -1271,12 +1407,12 @@ function buildWorld(){
   const BRANDS = [['TRILHA FÚRIA','#1a0f0a','#ff5a1f'],['BARRO & GÁS','#ffc83d','#1a0f0a'],['MX RACING','#ffffff','#2f7bff'],['PNEU BRAVO','#d92e3f','#ffffff']];
   const boardMats = BRANDS.map(([tx,bg,fg]) => new THREE.MeshLambertMaterial({ map:bannerTexture(tx,bg,fg) }));
   let bi = 0;
-  for (let x=700; x<track.length; x += 900 + r()*500){
+  if (!theme.stadium) for (let x=700; x<track.length; x += 900 + r()*500){
     const bz = FZ - 14, y = groundY(x, bz);
     const bd = new THREE.Mesh(new THREE.PlaneGeometry(130, 32), boardMats[bi++ % boardMats.length]);
     bd.position.set(x, y + 20, bz); bd.castShadow = true; worldGroup.add(bd);
   }
-  if (!theme.stars){
+  if (!theme.stars && !theme.stadium){
     const cc = new THREE.Color().copy(scene.fog.color).lerp(new THREE.Color(0xffffff), 0.55);
     for (let x=-3000; x<track.length+4000; x += 700 + r()*900){
       const s = new THREE.Sprite(new THREE.SpriteMaterial({ map:PUFF_TEX[Math.floor(r()*3)], color:cc, transparent:true, opacity:0.22 + r()*0.18, depthWrite:false }));
@@ -1700,8 +1836,8 @@ window.addEventListener('keydown', e => {
     if (e.code === 'ArrowRight' || e.code === 'ArrowLeft'){ setModeSel(Math.max(0, Math.min(MODES.length - 1, modeSel + (e.code === 'ArrowRight' ? 1 : -1)))); }
   }
   else if (mode === 'menu' && !$('menu').hidden && !$('paneRace').hidden){
-    if (e.code === 'Enter'){ e.preventDefault(); if (menuSel < save.unlocked) startRace(menuSel); }
-    if (e.code === 'ArrowRight' || e.code === 'ArrowLeft'){ const n = Math.max(0, Math.min(TRACKS.length - 1, menuSel + (e.code === 'ArrowRight' ? 1 : -1))); if (n !== menuSel) selectTrack(n, true); }
+    if (e.code === 'Enter'){ e.preventDefault(); if (!trackLocked(menuSel)) startRace(menuSel); }
+    if (e.code === 'ArrowRight' || e.code === 'ArrowLeft'){ const L = modeTracks(curMode), k = L.findIndex(t => t.id === menuSel), n = L[Math.max(0, Math.min(L.length - 1, k + (e.code === 'ArrowRight' ? 1 : -1)))].id; if (n !== menuSel) selectTrack(n, true); }
   }
   if ((e.code === 'Space' || e.code === 'Enter') && mode === 'crash' && crashT > 0.4) respawnPlayer();
 });
@@ -1741,24 +1877,42 @@ $('gfxLo').addEventListener('click', () => setGfx('leve'));
 function setPhys(m){ save.phys = m; persist(); renderPhys(); if (def) loadTrack(def.id); }
 $('physReal').addEventListener('click', () => setPhys('real'));
 $('physSim').addEventListener('click', () => setPhys('sim'));
-const THEME_TAG = ['Deserto', 'Floresta', 'Serra nublada', 'Noite', 'Cânion'];
+const THEME_TAG = ['Deserto', 'Floresta', 'Serra nublada', 'Noite', 'Cânion', 'Morros de Michigan', 'Estádio à noite', 'Estádio ao entardecer', 'Domo coberto', 'Pedreira'];
 const LOCK_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 let menuSel = 0, menuT0 = 0;
+const modeTracks = m => TRACKS.filter(t => t.mode === m);
+const unlockedFor = m => m === 'mx' ? save.unlocked : ((save.unl && save.unl[m]) || 1);
+const trackLocked = i => { const t = TRACKS[i]; if (t.free) return false; return modeTracks(t.mode).filter(q => !q.free).indexOf(t) >= unlockedFor(t.mode); };
+const STATS = {};
+function trackStats(t){
+  if (STATS[t.id]) return STATS[t.id];
+  const tr = CORE.generateTrack(t), f = tr.features, cnt = (k, v) => f.filter(q => q[k] === v).length;
+  let lo = 1e9, hi = -1e9; for (let x = 0; x < tr.length; x += U*4){ const y = CORE.baseYAt(tr, x); lo = Math.min(lo, y); hi = Math.max(hi, y); }
+  return STATS[t.id] = { meters:Math.round(tr.finishX/U), jumps:cnt('type','jump'), tables:cnt('type','table'), rollers:cnt('type','rollers'),
+    logs:cnt('kind','log'), steps:cnt('kind','step'), rocks:cnt('kind','rocks'), relief:Math.round((hi - lo)/U) };
+}
+let curMode = 'mx';
+const MODE_LABEL = { mx:'MOTOCROSS', sx:'SUPERCROSS', he:'HARD ENDURO' };
 function selectTrack(id, rebuild){
   menuSel = id;
   document.querySelectorAll('#trackList .tcard').forEach(c => c.setAttribute('aria-selected', c.dataset.id == id));
-  const t = TRACKS[id], locked = id >= save.unlocked, m = save.medal[t.id] || 0, best = save.best[t.id];
-  $('selNum').textContent = `PISTA ${id+1} DE ${TRACKS.length}`;
+  const t = TRACKS[id], locked = trackLocked(id), m = save.medal[t.id] || 0, best = save.best[t.id];
+  const reg = modeTracks(t.mode).filter(q => !q.free);
+  $('selNum').textContent = t.free ? 'PISTA ESPECIAL' : `PISTA ${reg.indexOf(t)+1} DE ${reg.length}`;
   $('selName').textContent = t.name;
-  $('selTags').innerHTML = `<span class="tag">${THEME_TAG[t.theme]}</span><span class="tag">${t.jumps} saltos</span><span class="tag">${t.tables} mesas</span>` + (t.rollers ? `<span class="tag">${t.rollers} ondulações</span>` : '');
+  const st = trackStats(t), tag = s => `<span class="tag">${s}</span>`, pl = (n, a, b) => n + ' ' + (n === 1 ? a : b);
+  $('selTags').innerHTML = tag(THEME_TAG[t.theme]) + (t.mode === 'he'
+    ? tag(pl(st.logs, 'tronco', 'troncos')) + tag(pl(st.steps, 'degrau', 'degraus')) + tag(pl(st.rocks, 'pedreira', 'pedreiras'))
+    : tag(pl(st.jumps, 'salto', 'saltos')) + tag(pl(st.tables, 'mesa', 'mesas')) + (st.rollers ? tag(pl(st.rollers, t.mode === 'sx' ? 'whoops' : 'ondulação', t.mode === 'sx' ? 'whoops' : 'ondulações')) : ''))
+    + (st.relief >= 2 ? tag(st.relief + ' m de desnível') : '');
   $('selRival').textContent = t.rivalName;
   $('selBest').textContent = best != null ? fmt(real(best)) + 's' : '—';
-  $('selLen').textContent = t.meters + ' m';
+  $('selLen').textContent = (st.meters >= 1000 ? (st.meters/1000).toFixed(2).replace('.', ',') + ' km' : st.meters + ' m');
   const goals = [['b', 'Terminar a corrida', m >= 1], ['s', `Vencer ${t.rivalName}`, m >= 2], ['g', `Abaixo de ${fmt(real(t.gold))}s`, m >= 3]];
   $('selGoals').innerHTML = goals.map(([c, txt, ok]) => `<li class="${ok ? 'done' : ''}"><i class="medal ${ok ? c : ''}"></i>${txt}${ok ? '<span class="ok">✓</span>' : ''}</li>`).join('');
   $('raceBtn').disabled = locked;
   $('selLock').hidden = !locked;
-  if (locked) $('selLock').textContent = `Vença ${TRACKS[id-1].rivalName} na pista ${id} para liberar.`;
+  if (locked){ const prev = reg[reg.indexOf(t) - 1]; $('selLock').textContent = `Vença ${prev.rivalName} na pista ${reg.indexOf(t)} para liberar.`; }
   if (rebuild && (!def || def.id !== id)){ loadTrack(id); }
   menuT0 = performance.now()/1000;
 }
@@ -1768,24 +1922,27 @@ function setMenuTab(tab){
 }
 $('tabRace').addEventListener('click', () => setMenuTab('race'));
 $('tabSet').addEventListener('click', () => setMenuTab('set'));
-$('raceBtn').addEventListener('click', () => { if (menuSel < save.unlocked) startRace(menuSel); });
+$('raceBtn').addEventListener('click', () => { if (!trackLocked(menuSel)) startRace(menuSel); });
 function renderMenu(){
   renderPhys(); renderGfx();
   $('menuCoins').textContent = save.coins;
   const list = $('trackList'); list.innerHTML = '';
-  TRACKS.forEach((t, i) => {
-    const locked = i >= save.unlocked, m = save.medal[t.id] || 0, th = THEMES[t.theme];
+  const mine = modeTracks(curMode), reg = mine.filter(q => !q.free);
+  mine.forEach(t => { const i = t.id;
+    const locked = trackLocked(i), m = save.medal[t.id] || 0, th = THEMES[t.theme];
     const b = document.createElement('button');
     b.className = 'tcard' + (locked ? ' locked' : ''); b.id = 'track-' + t.id; b.dataset.id = t.id; b.setAttribute('role', 'option');
     b.style.setProperty('--hill', '#' + new THREE.Color(th.hill[0]).getHexString());
     b.innerHTML = `<div class="swatch" style="background:${CSS_SWATCH[t.theme]}"></div>${locked ? `<span class="lock">${LOCK_SVG}</span>` : ''}
-      <div class="tb"><p class="tnum">PISTA ${i+1}</p><p class="tname">${t.name}</p>
+      <div class="tb"><p class="tnum">${t.free ? 'ESPECIAL' : 'PISTA ' + (reg.indexOf(t)+1)}</p><p class="tname">${t.name}</p>
       <div class="medals"><i class="medal ${m>=1?'b':''}"></i><i class="medal ${m>=2?'s':''}"></i><i class="medal ${m>=3?'g':''}"></i></div></div>`;
     b.addEventListener('click', () => selectTrack(t.id, true));
     b.addEventListener('dblclick', () => { if (!locked) startRace(t.id); });
     list.appendChild(b);
   });
-  selectTrack(def ? def.id : Math.min(save.unlocked - 1, TRACKS.length - 1), false);
+  const start = def && def.mode === curMode ? def.id : reg[Math.min(unlockedFor(curMode), reg.length) - 1].id;
+  selectTrack(start, !def || def.mode !== curMode);
+  const cur = document.querySelector('#trackList .tcard[aria-selected="true"]'); if (cur) cur.scrollIntoView({ block:'nearest', inline:'nearest' });
 }
 const UP_DESC = { engine:'Mais força e velocidade máxima.', suspension:'Aguenta pousos mais tortos.', tires:'Mais tração na saída e nas rampas.' };
 const UP_ICON = {
@@ -1813,21 +1970,21 @@ function renderGarage(){
 function hideAll(){ ['modes','menu','garage','crash','result'].forEach(id => $(id).hidden = true); }
 let garageReturn = 'menu';
 const MODES = [
-  { id:'mx', name:'Motocross', color:'#ff5a1f', on:true, desc:'Pistas de terra ao ar livre, saltos longos e mesas. Vença o rival em 5 pistas.',
+  { id:'mx', name:'Motocross', color:'#ff5a1f', on:true, desc:'Pistas de terra ao ar livre, saltos longos e mesas. Vença o rival em 5 pistas e encare a pista especial Michigan.',
     art:`<svg viewBox="0 0 300 190" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="gmx" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb86b"/><stop offset=".6" stop-color="#f7867a"/><stop offset="1" stop-color="#8a4f86"/></linearGradient></defs>
       <rect width="300" height="190" fill="url(#gmx)"/><circle cx="228" cy="62" r="22" fill="#ffe2b0" opacity=".9"/>
       <path d="M0 120 L40 96 L78 112 L126 80 L170 108 L214 88 L260 106 L300 92 V190 H0Z" fill="#a0604a" opacity=".8"/>
       <path d="M0 150 C40 150 60 150 88 150 L132 120 C140 116 144 116 148 122 L160 150 C200 150 210 138 236 128 C252 122 262 130 272 150 L300 150 V190 H0Z" fill="#6b3d1f"/>
       <path d="M0 150 H300" stroke="#c98a4b" stroke-width="3" opacity=".7"/>
       <g transform="translate(176 70) rotate(-14)"><circle cx="0" cy="22" r="11" fill="none" stroke="#1a1a1a" stroke-width="4"/><circle cx="40" cy="22" r="11" fill="none" stroke="#1a1a1a" stroke-width="4"/><path d="M0 22 L14 10 H30 L40 22 M18 10 L22 0 H34 L30 10 M34 0 L44 -2" stroke="#ff5a1f" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="-12" r="6" fill="#fff"/><path d="M22 -6 L18 6 L28 8" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/></g></svg>` },
-  { id:'sx', name:'Supercross', color:'#7a6bff', on:false, desc:'Estádio iluminado, curvas fechadas, whoops e sequências rítmicas de saltos curtos.',
+  { id:'sx', name:'Supercross', color:'#7a6bff', on:true, desc:'Estádio iluminado, curvas fechadas, whoops e sequências rítmicas de saltos curtos.',
     art:`<svg viewBox="0 0 300 190" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="gsx" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b0f24"/><stop offset="1" stop-color="#2a2466"/></linearGradient><radialGradient id="lsx"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#9f96ff" stop-opacity="0"/></radialGradient></defs>
       <rect width="300" height="190" fill="url(#gsx)"/>
       <path d="M-10 40 L310 40 L300 96 L0 96Z" fill="#1c1a44"/><g fill="#3c3680">${Array.from({length:30},(_,i)=>`<rect x="${i*10+2}" y="${50+(i%3)*12}" width="6" height="6" rx="3"/>`).join('')}</g>
       <circle cx="50" cy="30" r="34" fill="url(#lsx)"/><circle cx="150" cy="22" r="30" fill="url(#lsx)"/><circle cx="250" cy="30" r="34" fill="url(#lsx)"/>
       <path d="M0 150 Q15 132 30 150 Q45 132 60 150 Q75 132 90 150 Q105 132 120 150 L160 150 L190 122 L210 150 L240 150 L262 124 L286 150 L300 150 V190 H0Z" fill="#4a3526"/>
       <path d="M0 150 H300" stroke="#fff" stroke-width="2" stroke-dasharray="10 8" opacity=".35"/></svg>` },
-  { id:'he', name:'Hard Enduro', color:'#3ecf6e', on:false, desc:'Subidas íngremes, pedras, troncos e trechos técnicos onde tração vale mais que velocidade.',
+  { id:'he', name:'Hard Enduro', color:'#3ecf6e', on:true, desc:'Subidas íngremes, pedras, troncos e trechos técnicos onde tração vale mais que velocidade.',
     art:`<svg viewBox="0 0 300 190" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="ghe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd6fb"/><stop offset="1" stop-color="#e6f6ff"/></linearGradient></defs>
       <rect width="300" height="190" fill="url(#ghe)"/>
       <path d="M0 110 L60 70 L110 96 L170 40 L230 84 L300 60 V190 H0Z" fill="#6f9fa8" opacity=".7"/>
@@ -1839,18 +1996,18 @@ const MODES = [
 let modeSel = 0;
 function renderModes(){
   $('modesCoins').textContent = save.coins;
-  const got = TRACKS.reduce((a, t) => a + (save.medal[t.id] || 0), 0), tot = TRACKS.length*3;
+  const medalsOf = m => { const L = modeTracks(m); return [L.reduce((a, t) => a + (save.medal[t.id] || 0), 0), L.length*3]; };
   $('modeList').innerHTML = MODES.map((m, i) => `<button class="mcard ${m.on ? '' : 'off'}" role="option" id="mode-${m.id}" data-i="${i}" aria-selected="${i === modeSel}" aria-disabled="${!m.on}" style="--mc:${m.color}">
       <div class="art">${m.art}${m.on ? '' : '<span class="soon">EM BREVE</span>'}</div>
       <div class="mb"><p class="mt">${m.name}</p><p class="md">${m.desc}</p>
-      <div class="mf">${m.on ? `<i class="medal g"></i>${got} de ${tot} medalhas<span class="enter">Entrar <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>` : 'Pistas em construção'}</div></div></button>`).join('');
+      <div class="mf">${m.on ? `<i class="medal g"></i>${medalsOf(m.id)[0]} de ${medalsOf(m.id)[1]} medalhas<span class="enter">Entrar <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>` : 'Pistas em construção'}</div></div></button>`).join('');
   $('modeList').querySelectorAll('.mcard').forEach(c => {
     c.addEventListener('mouseenter', () => setModeSel(+c.dataset.i));
     c.addEventListener('click', () => enterMode(+c.dataset.i));
   });
 }
 function setModeSel(i){ modeSel = i; document.querySelectorAll('#modeList .mcard').forEach(c => c.setAttribute('aria-selected', +c.dataset.i === i)); }
-function enterMode(i){ setModeSel(i); if (MODES[i].on) showMenu(); }
+function enterMode(i){ setModeSel(i); if (!MODES[i].on) return; curMode = MODES[i].id; showMenu(); }
 function showModes(){
   showMenu(); $('menu').hidden = true;
   renderModes(); $('modes').hidden = false;
@@ -1860,7 +2017,7 @@ function showMenu(){
   mode = 'menu'; hideAll(); $('hud').hidden = true; $('countdown').hidden = true;
   renderMenu(); $('menu').hidden = false; resize();
   if (!def){ loadTrack(menuSel); }
-  setMenuTab('race'); menuT0 = performance.now()/1000;
+  setMenuTab('race'); menuT0 = performance.now()/1000; $('modeTag').textContent = MODE_LABEL[curMode];
   setVisible(meBike, true); setVisible(rivalBike, true);
 }
 function showGarage(from){ garageReturn = from; hideAll(); renderGarage(); $('garage').hidden = false; }
@@ -1872,7 +2029,7 @@ $('crashMenu').addEventListener('click', showMenu);
 $('resRetry').addEventListener('click', () => startRace(def.id));
 $('resMenu').addEventListener('click', showMenu);
 $('resGarage').addEventListener('click', () => showGarage('result'));
-$('resNext').addEventListener('click', () => { if (def.id+1 < TRACKS.length && def.id+1 < save.unlocked) startRace(def.id+1); });
+$('resNext').addEventListener('click', () => { const ML = modeTracks(def.mode), n = ML[ML.indexOf(def) + 1]; if (n && !trackLocked(n.id)) startRace(n.id); });
 
 function loadTrack(id){
   const same = def && def.id === id && track;
@@ -1914,7 +2071,11 @@ function finishRace(){
   save.medal[def.id] = Math.max(prevMedal, medal);
   const newRecord = save.best[def.id] == null || myT < save.best[def.id];
   if (newRecord) save.best[def.id] = myT;
-  if (win && save.unlocked < def.id + 2) save.unlocked = Math.min(TRACKS.length, def.id + 2);
+  if (win && !def.free){
+    const reg = modeTracks(def.mode).filter(q => !q.free), nextN = Math.min(reg.length, reg.indexOf(def) + 2);
+    if (def.mode === 'mx') save.unlocked = Math.max(save.unlocked, nextN);
+    else { save.unl = save.unl || {}; save.unl[def.mode] = Math.max(save.unl[def.mode] || 1, nextN); }
+  }
   persist();
 
   $('resKicker').textContent = def.name + (newRecord ? ' · novo recorde' : '');
@@ -1927,9 +2088,9 @@ function finishRace(){
   $('resRival').textContent = fmt(real(rivalT)) + 's';
   $('resFlips').textContent = sim.flipsTotal;
   $('resCoins').textContent = '+' + coins;
-  const hasNext = def.id + 1 < TRACKS.length && def.id + 1 < save.unlocked;
+  const ML = modeTracks(def.mode), nxt = ML[ML.indexOf(def) + 1], hasNext = !!nxt && !trackLocked(nxt.id);
   $('resNext').disabled = !hasNext;
-  $('resNext').textContent = def.id + 1 >= TRACKS.length ? 'CAMPEONATO COMPLETO' : hasNext ? 'PRÓXIMA PISTA' : 'VENÇA PARA LIBERAR A PRÓXIMA';
+  $('resNext').textContent = !nxt ? 'CAMPEONATO COMPLETO' : hasNext ? 'PRÓXIMA PISTA' : 'VENÇA PARA LIBERAR A PRÓXIMA';
   setTimeout(() => { if (mode === 'result'){ $('result').hidden = false; $('hud').hidden = true; } }, 900);
 }
 
@@ -1985,7 +2146,10 @@ function safeRespawnX(xu){
   for (let k=0; k<600; k++, x -= 20){
     if (x <= K.START_X) return K.START_X;
     let ok = true;
-    for (let d=-160; d<=160; d+=20){ if (Math.abs(CORE.trackYAt(track, x + d)) > 3){ ok = false; break; } }
+    // straight, gentle ground (flat or a steady hill) with no jumps across ±160 u
+    const ya = CORE.trackYAt(track, x - 160), yb2 = CORE.trackYAt(track, x + 160), sl = (yb2 - ya)/320;
+    if (Math.abs(sl) > 0.12) ok = false;
+    for (let d=-160; ok && d<=160; d+=20){ if (Math.abs(CORE.trackYAt(track, x + d) - (ya + sl*(d + 160))) > 4){ ok = false; } }
     if (ok) return x;
   }
   return K.START_X;
@@ -2069,7 +2233,7 @@ function syncVisuals(dt){
   const speed = Math.max(0, vx);
   const tx = p.x + 80 + speed*0.4;
   camX += (tx - camX) * Math.min(1, dt*5);
-  const ty = Math.max(40, p.y*0.85);
+  const cB = baseY(p.x), ty = cB + Math.max(40, (p.y - cB)*0.85);   // relative to the hill the track sits on
   camY += (ty - camY) * Math.min(1, dt*3);
   const tz = Math.max(1150, 330/(0.24*camera.aspect)) + speed*0.75;
   camZ += (tz - camZ) * Math.min(1, dt*1.2);
