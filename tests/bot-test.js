@@ -5,7 +5,7 @@ function run(def){
   const tr=core.generateTrack(def), sim=core.createSim(tr,{engine:lvl,suspension:lvl,tires:lvl},mode), rv=core.createRival(tr,def);
   for(let f=0;f<120;f++) sim.step({},1/60,false);
   let log=[];
-  for(let f=0;f<60*150;f++){
+  for(let f=0;f<60*320;f++){
     const x=sim.x, v=sim.vx;
     const feat=tr.features.find(fe => (fe.end != null ? fe.end : fe.lipX) > x-1);
     let vt=26;
